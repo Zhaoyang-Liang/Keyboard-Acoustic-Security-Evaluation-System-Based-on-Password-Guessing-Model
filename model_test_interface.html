@@ -1,0 +1,2420 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="zh-CN">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>键盘声音识别 - 模型测试</title>-->
+<!--    <style>-->
+<!--        * {-->
+<!--            margin: 0;-->
+<!--            padding: 0;-->
+<!--            box-sizing: border-box;-->
+<!--        }-->
+
+<!--        body {-->
+<!--            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;-->
+<!--            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);-->
+<!--            min-height: 100vh;-->
+<!--            padding: 20px;-->
+<!--        }-->
+
+<!--        .container {-->
+<!--            max-width: 1200px;-->
+<!--            margin: 0 auto;-->
+<!--            background: rgba(255, 255, 255, 0.95);-->
+<!--            border-radius: 20px;-->
+<!--            padding: 30px;-->
+<!--            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);-->
+<!--            backdrop-filter: blur(10px);-->
+<!--        }-->
+
+<!--        .header {-->
+<!--            text-align: center;-->
+<!--            margin-bottom: 40px;-->
+<!--        }-->
+
+<!--        .header h1 {-->
+<!--            color: #333;-->
+<!--            font-size: 2.5em;-->
+<!--            margin-bottom: 10px;-->
+<!--            background: linear-gradient(45deg, #667eea, #764ba2);-->
+<!--            -webkit-background-clip: text;-->
+<!--            -webkit-text-fill-color: transparent;-->
+<!--            background-clip: text;-->
+<!--        }-->
+
+<!--        .header p {-->
+<!--            color: #666;-->
+<!--            font-size: 1.1em;-->
+<!--        }-->
+
+<!--        .config-section {-->
+<!--            background: #f8f9fa;-->
+<!--            border-radius: 15px;-->
+<!--            padding: 25px;-->
+<!--            margin-bottom: 30px;-->
+<!--            border-left: 5px solid #667eea;-->
+<!--        }-->
+
+<!--        .config-section h3 {-->
+<!--            color: #333;-->
+<!--            margin-bottom: 20px;-->
+<!--            font-size: 1.3em;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--        }-->
+
+<!--        .config-section h3::before {-->
+<!--            content: "⚙️";-->
+<!--            margin-right: 10px;-->
+<!--        }-->
+
+<!--        .form-group {-->
+<!--            margin-bottom: 20px;-->
+<!--        }-->
+
+<!--        .form-group label {-->
+<!--            display: block;-->
+<!--            margin-bottom: 8px;-->
+<!--            font-weight: 600;-->
+<!--            color: #333;-->
+<!--        }-->
+
+<!--        .form-group input, .form-group select {-->
+<!--            width: 100%;-->
+<!--            padding: 12px 15px;-->
+<!--            border: 2px solid #e1e5e9;-->
+<!--            border-radius: 10px;-->
+<!--            font-size: 16px;-->
+<!--            transition: all 0.3s ease;-->
+<!--            background: white;-->
+<!--        }-->
+
+<!--        .form-group input:focus, .form-group select:focus {-->
+<!--            outline: none;-->
+<!--            border-color: #667eea;-->
+<!--            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);-->
+<!--        }-->
+
+<!--        .checkbox-group {-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            margin-bottom: 15px;-->
+<!--        }-->
+
+<!--        .checkbox-group input[type="checkbox"] {-->
+<!--            width: auto;-->
+<!--            margin-right: 10px;-->
+<!--            transform: scale(1.2);-->
+<!--        }-->
+
+<!--        .checkbox-group label {-->
+<!--            margin-bottom: 0;-->
+<!--            cursor: pointer;-->
+<!--        }-->
+
+<!--        .candidates-config {-->
+<!--            margin-top: 15px;-->
+<!--            padding: 15px;-->
+<!--            background: rgba(102, 126, 234, 0.1);-->
+<!--            border-radius: 10px;-->
+<!--            transition: all 0.3s ease;-->
+<!--        }-->
+
+<!--        .candidates-config.hidden {-->
+<!--            display: none;-->
+<!--        }-->
+
+<!--        .btn {-->
+<!--            background: linear-gradient(45deg, #667eea, #764ba2);-->
+<!--            color: white;-->
+<!--            border: none;-->
+<!--            padding: 15px 30px;-->
+<!--            border-radius: 25px;-->
+<!--            font-size: 16px;-->
+<!--            font-weight: 600;-->
+<!--            cursor: pointer;-->
+<!--            transition: all 0.3s ease;-->
+<!--            text-transform: uppercase;-->
+<!--            letter-spacing: 1px;-->
+<!--            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);-->
+<!--        }-->
+
+<!--        .btn:hover {-->
+<!--            transform: translateY(-2px);-->
+<!--            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);-->
+<!--        }-->
+
+<!--        .btn:disabled {-->
+<!--            background: #ccc;-->
+<!--            cursor: not-allowed;-->
+<!--            transform: none;-->
+<!--            box-shadow: none;-->
+<!--        }-->
+
+<!--        .results-section {-->
+<!--            margin-top: 30px;-->
+<!--            display: none;-->
+<!--        }-->
+
+<!--        .results-header {-->
+<!--            background: linear-gradient(45deg, #28a745, #20c997);-->
+<!--            color: white;-->
+<!--            padding: 20px;-->
+<!--            border-radius: 15px 15px 0 0;-->
+<!--            text-align: center;-->
+<!--        }-->
+
+<!--        .results-content {-->
+<!--            background: white;-->
+<!--            border: 2px solid #28a745;-->
+<!--            border-top: none;-->
+<!--            border-radius: 0 0 15px 15px;-->
+<!--            padding: 25px;-->
+<!--        }-->
+
+<!--        .metric-grid {-->
+<!--            display: grid;-->
+<!--            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));-->
+<!--            gap: 20px;-->
+<!--            margin-bottom: 30px;-->
+<!--        }-->
+
+<!--        .metric-card {-->
+<!--            background: #f8f9fa;-->
+<!--            border-radius: 15px;-->
+<!--            padding: 20px;-->
+<!--            text-align: center;-->
+<!--            border-left: 5px solid #667eea;-->
+<!--            transition: transform 0.3s ease;-->
+<!--        }-->
+
+<!--        .metric-card:hover {-->
+<!--            transform: translateY(-5px);-->
+<!--        }-->
+
+<!--        .metric-value {-->
+<!--            font-size: 2.5em;-->
+<!--            font-weight: bold;-->
+<!--            color: #667eea;-->
+<!--            margin-bottom: 5px;-->
+<!--        }-->
+
+<!--        .metric-label {-->
+<!--            color: #666;-->
+<!--            font-size: 0.9em;-->
+<!--            text-transform: uppercase;-->
+<!--            letter-spacing: 1px;-->
+<!--        }-->
+
+<!--        .detailed-results {-->
+<!--            margin-top: 30px;-->
+<!--        }-->
+
+<!--        .file-result {-->
+<!--            background: #f8f9fa;-->
+<!--            border-radius: 15px;-->
+<!--            padding: 20px;-->
+<!--            margin-bottom: 15px;-->
+<!--            border-left: 5px solid #28a745;-->
+<!--        }-->
+
+<!--        .file-result.failed {-->
+<!--            border-left-color: #dc3545;-->
+<!--        }-->
+
+<!--        .file-header {-->
+<!--            display: flex;-->
+<!--            justify-content: between;-->
+<!--            align-items: center;-->
+<!--            margin-bottom: 15px;-->
+<!--        }-->
+
+<!--        .file-name {-->
+<!--            font-weight: bold;-->
+<!--            color: #333;-->
+<!--            font-size: 1.1em;-->
+<!--        }-->
+
+<!--        .accuracy-badge {-->
+<!--            background: #28a745;-->
+<!--            color: white;-->
+<!--            padding: 5px 15px;-->
+<!--            border-radius: 20px;-->
+<!--            font-size: 0.9em;-->
+<!--            font-weight: bold;-->
+<!--        }-->
+
+<!--        .accuracy-badge.low {-->
+<!--            background: #dc3545;-->
+<!--        }-->
+
+<!--        .accuracy-badge.medium {-->
+<!--            background: #ffc107;-->
+<!--            color: #333;-->
+<!--        }-->
+
+<!--        .candidates-list {-->
+<!--            background: white;-->
+<!--            border-radius: 10px;-->
+<!--            padding: 15px;-->
+<!--            margin-top: 10px;-->
+<!--        }-->
+
+<!--        .candidate-item {-->
+<!--            display: flex;-->
+<!--            justify-content: space-between;-->
+<!--            align-items: center;-->
+<!--            padding: 8px 0;-->
+<!--            border-bottom: 1px solid #eee;-->
+<!--        }-->
+
+<!--        .candidate-item:last-child {-->
+<!--            border-bottom: none;-->
+<!--        }-->
+
+<!--        .candidate-rank {-->
+<!--            background: #667eea;-->
+<!--            color: white;-->
+<!--            width: 25px;-->
+<!--            height: 25px;-->
+<!--            border-radius: 50%;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            justify-content: center;-->
+<!--            font-size: 0.8em;-->
+<!--            font-weight: bold;-->
+<!--        }-->
+
+<!--        .candidate-rank.hit {-->
+<!--            background: #28a745;-->
+<!--        }-->
+
+<!--        .loading {-->
+<!--            display: none;-->
+<!--            text-align: center;-->
+<!--            padding: 40px;-->
+<!--        }-->
+
+<!--        .loading-spinner {-->
+<!--            width: 50px;-->
+<!--            height: 50px;-->
+<!--            border: 5px solid #f3f3f3;-->
+<!--            border-top: 5px solid #667eea;-->
+<!--            border-radius: 50%;-->
+<!--            animation: spin 1s linear infinite;-->
+<!--            margin: 0 auto 20px;-->
+<!--        }-->
+
+<!--        @keyframes spin {-->
+<!--            0% { transform: rotate(0deg); }-->
+<!--            100% { transform: rotate(360deg); }-->
+<!--        }-->
+
+<!--        .progress-bar {-->
+<!--            width: 100%;-->
+<!--            height: 8px;-->
+<!--            background: #e1e5e9;-->
+<!--            border-radius: 4px;-->
+<!--            margin: 20px 0;-->
+<!--            overflow: hidden;-->
+<!--        }-->
+
+<!--        .progress-fill {-->
+<!--            height: 100%;-->
+<!--            background: linear-gradient(45deg, #667eea, #764ba2);-->
+<!--            width: 0%;-->
+<!--            transition: width 0.3s ease;-->
+<!--        }-->
+
+<!--        .log-section {-->
+<!--            background: #2d3748;-->
+<!--            color: #e2e8f0;-->
+<!--            border-radius: 10px;-->
+<!--            padding: 20px;-->
+<!--            margin-top: 20px;-->
+<!--            font-family: 'Courier New', monospace;-->
+<!--            font-size: 14px;-->
+<!--            max-height: 400px;-->
+<!--            overflow-y: auto;-->
+<!--        }-->
+
+<!--        .error-message {-->
+<!--            background: #fed7d7;-->
+<!--            color: #c53030;-->
+<!--            border: 2px solid #feb2b2;-->
+<!--            border-radius: 10px;-->
+<!--            padding: 15px;-->
+<!--            margin-top: 20px;-->
+<!--        }-->
+
+<!--        .success-message {-->
+<!--            background: #c6f6d5;-->
+<!--            color: #2f855a;-->
+<!--            border: 2px solid #9ae6b4;-->
+<!--            border-radius: 10px;-->
+<!--            padding: 15px;-->
+<!--            margin-top: 20px;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--    <div class="container">-->
+<!--        <div class="header">-->
+<!--            <h1>🎹 键盘声音识别系统</h1>-->
+<!--            <p>模型性能测试与评估</p>-->
+<!--        </div>-->
+
+<!--        <div class="config-section">-->
+<!--            <h3>测试配置</h3>-->
+<!--            -->
+<!--            <div class="form-group">-->
+<!--                <label for="modelDir">模型目录路径</label>-->
+<!--                <input type="text" id="modelDir" placeholder="请输入模型目录路径（留空使用默认）">-->
+<!--            </div>-->
+
+<!--            <div class="form-group">-->
+<!--                <label for="testDir">测试数据目录路径</label>-->
+<!--                <input type="text" id="testDir" placeholder="请输入测试数据目录路径（默认：test）">-->
+<!--            </div>-->
+
+<!--            <div class="checkbox-group">-->
+<!--                <input type="checkbox" id="useMultiple" checked>-->
+<!--                <label for="useMultiple">启用多候选预测</label>-->
+<!--            </div>-->
+
+<!--            <div class="candidates-config" id="candidatesConfig">-->
+<!--                <div class="form-group">-->
+<!--                    <label for="numCandidates">候选数量</label>-->
+<!--                    <input type="number" id="numCandidates" value="10" min="1" max="50">-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            <button class="btn" onclick="startTest()" id="startBtn">-->
+<!--                🚀 开始测试-->
+<!--            </button>-->
+<!--        </div>-->
+
+<!--        <div class="loading" id="loading">-->
+<!--            <div class="loading-spinner"></div>-->
+<!--            <h3>正在执行模型测试...</h3>-->
+<!--            <p>请耐心等待，这可能需要几分钟时间</p>-->
+<!--            <div class="progress-bar">-->
+<!--                <div class="progress-fill" id="progressFill"></div>-->
+<!--            </div>-->
+<!--            <p id="progressText">准备中...</p>-->
+<!--        </div>-->
+
+<!--        <div class="results-section" id="resultsSection">-->
+<!--            <div class="results-header">-->
+<!--                <h2>📊 测试结果</h2>-->
+<!--            </div>-->
+<!--            <div class="results-content">-->
+<!--                <div class="metric-grid" id="metricsGrid">-->
+<!--                    &lt;!&ndash; 指标卡片将通过JavaScript动态生成 &ndash;&gt;-->
+<!--                </div>-->
+<!--                -->
+<!--                <div class="detailed-results">-->
+<!--                    <h3>📋 详细结果</h3>-->
+<!--                    <div id="detailedResults">-->
+<!--                        &lt;!&ndash; 详细结果将通过JavaScript动态生成 &ndash;&gt;-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        <div class="log-section" id="logSection" style="display: none;">-->
+<!--            <h4>📝 执行日志</h4>-->
+<!--            <div id="logContent"></div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <script>-->
+<!--        // 多候选预测开关控制-->
+<!--        document.getElementById('useMultiple').addEventListener('change', function() {-->
+<!--            const candidatesConfig = document.getElementById('candidatesConfig');-->
+<!--            if (this.checked) {-->
+<!--                candidatesConfig.classList.remove('hidden');-->
+<!--            } else {-->
+<!--                candidatesConfig.classList.add('hidden');-->
+<!--            }-->
+<!--        });-->
+
+<!--        // 开始测试-->
+<!--        async function startTest() {-->
+<!--            const startBtn = document.getElementById('startBtn');-->
+<!--            const loading = document.getElementById('loading');-->
+<!--            const resultsSection = document.getElementById('resultsSection');-->
+<!--            const logSection = document.getElementById('logSection');-->
+<!--            -->
+<!--            // 获取配置-->
+<!--            const config = {-->
+<!--                modelDir: document.getElementById('modelDir').value.trim(),-->
+<!--                testDir: document.getElementById('testDir').value.trim() || 'test',-->
+<!--                useMultiple: document.getElementById('useMultiple').checked,-->
+<!--                numCandidates: parseInt(document.getElementById('numCandidates').value) || 10-->
+<!--            };-->
+
+<!--            // 显示加载状态-->
+<!--            startBtn.disabled = true;-->
+<!--            loading.style.display = 'block';-->
+<!--            resultsSection.style.display = 'none';-->
+<!--            logSection.style.display = 'block';-->
+
+<!--            try {-->
+<!--                // 发送测试请求-->
+<!--                const response = await fetch('/api/test_model', {-->
+<!--                    method: 'POST',-->
+<!--                    headers: {-->
+<!--                        'Content-Type': 'application/json',-->
+<!--                    },-->
+<!--                    body: JSON.stringify(config)-->
+<!--                });-->
+
+<!--                if (!response.ok) {-->
+<!--                    throw new Error(`HTTP error! status: ${response.status}`);-->
+<!--                }-->
+
+<!--                // 处理流式响应-->
+<!--                const reader = response.body.getReader();-->
+<!--                const decoder = new TextDecoder();-->
+<!--                let buffer = '';-->
+
+<!--                while (true) {-->
+<!--                    const { done, value } = await reader.read();-->
+<!--                    if (done) break;-->
+
+<!--                    buffer += decoder.decode(value, { stream: true });-->
+<!--                    const lines = buffer.split('\n');-->
+<!--                    buffer = lines.pop(); // 保留最后一个不完整的行-->
+
+<!--                    for (const line of lines) {-->
+<!--                        if (line.trim()) {-->
+<!--                            try {-->
+<!--                                const data = JSON.parse(line);-->
+<!--                                handleStreamResponse(data);-->
+<!--                            } catch (e) {-->
+<!--                                // 非JSON行，可能是日志-->
+<!--                                appendLog(line);-->
+<!--                            }-->
+<!--                        }-->
+<!--                    }-->
+<!--                }-->
+
+<!--                // 处理剩余的buffer-->
+<!--                if (buffer.trim()) {-->
+<!--                    try {-->
+<!--                        const data = JSON.parse(buffer);-->
+<!--                        handleStreamResponse(data);-->
+<!--                    } catch (e) {-->
+<!--                        appendLog(buffer);-->
+<!--                    }-->
+<!--                }-->
+
+<!--            } catch (error) {-->
+<!--                showError('测试过程中发生错误: ' + error.message);-->
+<!--            } finally {-->
+<!--                // 隐藏加载状态-->
+<!--                loading.style.display = 'none';-->
+<!--                startBtn.disabled = false;-->
+<!--            }-->
+<!--        }-->
+
+<!--        // 处理流式响应-->
+<!--        function handleStreamResponse(data) {-->
+<!--            if (data.type === 'progress') {-->
+<!--                updateProgress(data.progress, data.message);-->
+<!--            } else if (data.type === 'log') {-->
+<!--                appendLog(data.message);-->
+<!--            } else if (data.type === 'result') {-->
+<!--                displayResults(data.data);-->
+<!--            } else if (data.type === 'error') {-->
+<!--                showError(data.message);-->
+<!--            }-->
+<!--        }-->
+
+<!--        // 更新进度-->
+<!--        function updateProgress(progress, message) {-->
+<!--            const progressFill = document.getElementById('progressFill');-->
+<!--            const progressText = document.getElementById('progressText');-->
+<!--            progressFill.style.width = progress + '%';-->
+<!--            progressText.textContent = message;-->
+<!--        }-->
+
+<!--        // 添加日志-->
+<!--        function appendLog(message) {-->
+<!--            const logContent = document.getElementById('logContent');-->
+<!--            logContent.innerHTML += message + '\n';-->
+<!--            logContent.scrollTop = logContent.scrollHeight;-->
+<!--        }-->
+
+<!--        // 显示结果-->
+<!--        function displayResults(results) {-->
+<!--            const loading = document.getElementById('loading');-->
+<!--            const resultsSection = document.getElementById('resultsSection');-->
+<!--            -->
+<!--            loading.style.display = 'none';-->
+<!--            resultsSection.style.display = 'block';-->
+
+<!--            // 生成指标卡片-->
+<!--            generateMetricsCards(results.summary);-->
+
+<!--            // 生成详细结果-->
+<!--            generateDetailedResults(results.details);-->
+<!--        }-->
+
+<!--        // 生成指标卡片-->
+<!--        function generateMetricsCards(summary) {-->
+<!--            const metricsGrid = document.getElementById('metricsGrid');-->
+<!--            metricsGrid.innerHTML = '';-->
+
+<!--            const metrics = [-->
+<!--                { label: '字符准确率', value: summary.char_accuracy, suffix: '%' },-->
+<!--                { label: '序列准确率', value: summary.sequence_accuracy, suffix: '%' },-->
+<!--                { label: '总测试文件', value: summary.total_files, suffix: '' },-->
+<!--                { label: '成功预测', value: summary.successful_predictions, suffix: '' }-->
+<!--            ];-->
+
+<!--            if (summary.multiple_candidates) {-->
+<!--                metrics.push(-->
+<!--                    { label: 'Top-5 准确率', value: summary.top5_accuracy, suffix: '%' },-->
+<!--                    { label: 'Top-10 准确率', value: summary.top10_accuracy, suffix: '%' }-->
+<!--                );-->
+<!--            }-->
+
+<!--            metrics.forEach(metric => {-->
+<!--                const card = document.createElement('div');-->
+<!--                card.className = 'metric-card';-->
+<!--                card.innerHTML = `-->
+<!--                    <div class="metric-value">${metric.value}${metric.suffix}</div>-->
+<!--                    <div class="metric-label">${metric.label}</div>-->
+<!--                `;-->
+<!--                metricsGrid.appendChild(card);-->
+<!--            });-->
+<!--        }-->
+
+<!--        // 生成详细结果-->
+<!--        function generateDetailedResults(details) {-->
+<!--            const detailedResults = document.getElementById('detailedResults');-->
+<!--            detailedResults.innerHTML = '';-->
+
+<!--            details.forEach(fileResult => {-->
+<!--                const resultDiv = document.createElement('div');-->
+<!--                resultDiv.className = `file-result ${fileResult.success ? '' : 'failed'}`;-->
+<!--                -->
+<!--                let candidatesHtml = '';-->
+<!--                if (fileResult.candidates && fileResult.candidates.length > 0) {-->
+<!--                    candidatesHtml = `-->
+<!--                        <div class="candidates-list">-->
+<!--                            <h5>候选结果:</h5>-->
+<!--                            ${fileResult.candidates.map((candidate, index) => `-->
+<!--                                <div class="candidate-item">-->
+<!--                                    <span class="candidate-rank ${candidate.is_correct ? 'hit' : ''}">${index + 1}</span>-->
+<!--                                    <span>${candidate.sequence}</span>-->
+<!--                                    <span>${(candidate.confidence * 100).toFixed(2)}%</span>-->
+<!--                                </div>-->
+<!--                            `).join('')}-->
+<!--                        </div>-->
+<!--                    `;-->
+<!--                }-->
+
+<!--                resultDiv.innerHTML = `-->
+<!--                    <div class="file-header">-->
+<!--                        <span class="file-name">📁 ${fileResult.filename}</span>-->
+<!--                        <span class="accuracy-badge ${getAccuracyClass(fileResult.char_accuracy)}">-->
+<!--                            ${(fileResult.char_accuracy * 100).toFixed(1)}%-->
+<!--                        </span>-->
+<!--                    </div>-->
+<!--                    <p><strong>预期:</strong> ${fileResult.expected}</p>-->
+<!--                    <p><strong>预测:</strong> ${fileResult.predicted}</p>-->
+<!--                    <p><strong>序列匹配:</strong> ${fileResult.sequence_match ? '✅ 完全匹配' : '❌ 不匹配'}</p>-->
+<!--                    ${candidatesHtml}-->
+<!--                `;-->
+<!--                -->
+<!--                detailedResults.appendChild(resultDiv);-->
+<!--            });-->
+<!--        }-->
+
+<!--        // 获取准确率等级类名-->
+<!--        function getAccuracyClass(accuracy) {-->
+<!--            if (accuracy >= 0.8) return '';-->
+<!--            if (accuracy >= 0.5) return 'medium';-->
+<!--            return 'low';-->
+<!--        }-->
+
+<!--        // 显示错误信息-->
+<!--        function showError(message) {-->
+<!--            const container = document.querySelector('.container');-->
+<!--            const errorDiv = document.createElement('div');-->
+<!--            errorDiv.className = 'error-message';-->
+<!--            errorDiv.innerHTML = `<strong>❌ 错误:</strong> ${message}`;-->
+<!--            container.appendChild(errorDiv);-->
+<!--            -->
+<!--            // 5秒后自动移除错误信息-->
+<!--            setTimeout(() => {-->
+<!--                errorDiv.remove();-->
+<!--            }, 5000);-->
+<!--        }-->
+
+<!--        // 页面加载完成后的初始化-->
+<!--        document.addEventListener('DOMContentLoaded', function() {-->
+<!--            console.log('键盘声音识别系统界面已加载');-->
+<!--        });-->
+<!--    </script>-->
+<!--</body>-->
+<!--</html>-->
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acoustic Side-Channel Security Research Platform</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #007AFF;
+            --secondary-blue: #5856D6;
+            --success-green: #34C759;
+            --warning-orange: #FF9500;
+            --error-red: #FF3B30;
+            --text-primary: #1D1D1F;
+            --text-secondary: #6E6E73;
+            --text-tertiary: #C7C7CC;
+            --background-primary: #FFFFFF;
+            --background-secondary: #F2F2F7;
+            --background-tertiary: #FAFAFA;
+            --border-light: #E5E5EA;
+            --border-medium: #D1D1D6;
+            --shadow-light: rgba(0, 0, 0, 0.04);
+            --shadow-medium: rgba(0, 0, 0, 0.08);
+            --shadow-heavy: rgba(0, 0, 0, 0.16);
+            --gradient-primary: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+            --gradient-secondary: linear-gradient(135deg, #34C759 0%, #007AFF 100%);
+            --gradient-accent: linear-gradient(135deg, #FF3B30 0%, #FF9500 100%);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--background-tertiary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+
+        /* Landing Page Styles */
+        .landing-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #000000 0%, #1a1a2e 50%, #16213e 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .landing-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(0, 122, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(88, 86, 214, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(52, 199, 89, 0.1) 0%, transparent 50%);
+            animation: backgroundPulse 8s ease-in-out infinite;
+        }
+
+        @keyframes backgroundPulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .landing-container {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .landing-logo {
+            margin-bottom: 40px;
+            animation: logoFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .landing-logo-icon {
+            width: 120px;
+            height: 120px;
+            background: var(--gradient-primary);
+            border-radius: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            margin: 0 auto 20px;
+            box-shadow:
+                0 20px 40px rgba(0, 122, 255, 0.3),
+                0 0 60px rgba(0, 122, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .landing-title {
+            font-size: 72px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFFFFF 0%, #007AFF 50%, #5856D6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            animation: titleGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(0, 122, 255, 0.3)); }
+            50% { filter: drop-shadow(0 0 40px rgba(88, 86, 214, 0.5)); }
+        }
+
+        .landing-subtitle {
+            font-size: 32px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .landing-subtitle-en {
+            font-size: 20px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 40px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .landing-description {
+            font-size: 22px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 60px;
+            max-width: 800px;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        .security-warning-landing {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 24px;
+            background: rgba(255, 59, 48, 0.15);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            border-radius: 16px;
+            color: #FF6B6B;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 48px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(255, 59, 48, 0.2);
+        }
+
+        .landing-btn {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 20px 48px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: none;
+            letter-spacing: 0.5px;
+            box-shadow:
+                0 12px 24px rgba(0, 122, 255, 0.4),
+                0 0 40px rgba(0, 122, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .landing-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.8s ease;
+        }
+
+        .landing-btn:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow:
+                0 20px 40px rgba(0, 122, 255, 0.5),
+                0 0 60px rgba(0, 122, 255, 0.3);
+        }
+
+        .landing-btn:hover::before {
+            left: 100%;
+        }
+
+        .tech-stats {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 60px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .tech-stat {
+            text-align: center;
+            opacity: 0;
+            animation: statFadeIn 1s ease-out forwards;
+        }
+
+        .tech-stat:nth-child(1) { animation-delay: 0.5s; }
+        .tech-stat:nth-child(2) { animation-delay: 0.7s; }
+        .tech-stat:nth-child(3) { animation-delay: 0.9s; }
+
+        @keyframes statFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tech-stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* Main Application Styles */
+        .main-app {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.8);
+            border-bottom: 1px solid var(--border-light);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+
+        .logo-subtitle {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(52, 199, 89, 0.1);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--success-green);
+            border: 1px solid rgba(52, 199, 89, 0.2);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .back-btn {
+            background: var(--background-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--border-light);
+            transform: translateY(-1px);
+        }
+
+        /* Hero Section for Main App */
+        .hero {
+            background: linear-gradient(135deg, var(--background-primary) 0%, rgba(0, 122, 255, 0.02) 100%);
+            padding: 60px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 24px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .hero-subtitle-en {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 32px;
+        }
+
+        .hero-description {
+            font-size: 19px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+
+        .security-alert {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 20px;
+            background: rgba(255, 59, 48, 0.08);
+            border: 1px solid rgba(255, 59, 48, 0.2);
+            border-radius: 12px;
+            color: var(--error-red);
+            font-weight: 500;
+            font-size: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        .section {
+            background: var(--background-primary);
+            border-radius: 24px;
+            padding: 48px;
+            margin-bottom: 32px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 8px 32px var(--shadow-light);
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            box-shadow: 0 12px 48px var(--shadow-medium);
+            transform: translateY(-2px);
+        }
+
+        .section-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .section-title-en {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .section-description {
+            font-size: 17px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Form Styling */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .form-label-en {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            padding: 16px 20px;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            font-size: 16px;
+            background: var(--background-primary);
+            transition: all 0.2s ease;
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .checkbox-container {
+            background: var(--background-secondary);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border-light);
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-container:hover {
+            background: rgba(0, 122, 255, 0.03);
+            border-color: rgba(0, 122, 255, 0.2);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .checkbox-input {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            accent-color: var(--primary-blue);
+        }
+
+        .checkbox-content {
+            flex: 1;
+        }
+
+        .checkbox-label {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .checkbox-label-en {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .checkbox-description {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .candidates-config {
+            padding: 24px;
+            background: rgba(0, 122, 255, 0.05);
+            border: 1px solid rgba(0, 122, 255, 0.15);
+            border-radius: 12px;
+            margin-top: 16px;
+            transition: all 0.3s ease;
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .candidates-config.hidden {
+            transform: translateY(-8px);
+            opacity: 0;
+            max-height: 0;
+            padding: 0 24px;
+            margin-top: 0;
+            overflow: hidden;
+        }
+
+        /* Button Styling */
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 18px 36px;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 200px;
+            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 122, 255, 0.4);
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            background: var(--text-tertiary);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Loading States */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border-light);
+            border-top: 3px solid var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 24px;
+        }
+
+        .loading-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .loading-title-en {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .loading-description {
+            font-size: 17px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        .progress-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--background-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: progressShine 2s ease-in-out infinite;
+        }
+
+        @keyframes progressShine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-align: center;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results-header {
+            text-align: center;
+            padding: 48px;
+            background: linear-gradient(135deg, rgba(52, 199, 89, 0.08) 0%, rgba(0, 122, 255, 0.04) 100%);
+            border-radius: 24px 24px 0 0;
+            border: 1px solid var(--border-light);
+            border-bottom: none;
+        }
+
+        .results-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--gradient-secondary);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 24px;
+            box-shadow: 0 8px 24px rgba(52, 199, 89, 0.3);
+        }
+
+        .results-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .results-title-en {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .results-subtitle {
+            font-size: 17px;
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .results-content {
+            background: var(--background-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 0 0 24px 24px;
+            padding: 48px;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .metric-card {
+            background: var(--background-secondary);
+            border-radius: 20px;
+            padding: 32px 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px var(--shadow-medium);
+            border-color: rgba(0, 122, 255, 0.2);
+        }
+
+        .metric-value {
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 12px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .metric-label-en {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Security Impact */
+        .security-impact {
+            background: linear-gradient(135deg, rgba(255, 59, 48, 0.06) 0%, rgba(255, 149, 0, 0.04) 100%);
+            border: 1px solid rgba(255, 59, 48, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 48px 0;
+            text-align: center;
+        }
+
+        .security-impact-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--gradient-accent);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 24px;
+            box-shadow: 0 6px 20px rgba(255, 59, 48, 0.3);
+        }
+
+        .security-impact-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--error-red);
+            margin-bottom: 8px;
+        }
+
+        .security-impact-title-en {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 59, 48, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .security-impact-description {
+            font-size: 17px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Detailed Results */
+        .detailed-results {
+            margin-top: 48px;
+        }
+
+        .detailed-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .detailed-title-en {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .file-result {
+            background: var(--background-secondary);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 20px;
+            border-left: 6px solid var(--success-green);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-light);
+        }
+
+        .file-result:hover {
+            transform: translateX(6px);
+            box-shadow: 0 8px 32px var(--shadow-light);
+        }
+
+        .file-result.failed {
+            border-left-color: var(--error-red);
+            background: rgba(255, 59, 48, 0.03);
+        }
+
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .file-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .accuracy-badge {
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            background: var(--success-green);
+            color: white;
+            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
+        }
+
+        .accuracy-badge.medium {
+            background: var(--warning-orange);
+            box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
+        }
+
+        .accuracy-badge.low {
+            background: var(--error-red);
+            box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+        }
+
+        .prediction-details {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .prediction-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .prediction-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 100px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .prediction-value {
+            font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', monospace;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 12px 16px;
+            background: var(--background-primary);
+            border-radius: 10px;
+            border: 2px solid var(--border-light);
+            flex: 1;
+            transition: all 0.2s ease;
+        }
+
+        .prediction-value.expected {
+            color: var(--success-green);
+            border-color: rgba(52, 199, 89, 0.3);
+            background: rgba(52, 199, 89, 0.05);
+        }
+
+        .prediction-value.predicted {
+            color: var(--primary-blue);
+            border-color: rgba(0, 122, 255, 0.3);
+            background: rgba(0, 122, 255, 0.05);
+        }
+
+        .match-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .match-status.success {
+            color: var(--success-green);
+            background: rgba(52, 199, 89, 0.1);
+        }
+
+        .match-status.failed {
+            color: var(--error-red);
+            background: rgba(255, 59, 48, 0.1);
+        }
+
+        /* Candidates List */
+        .candidates-list {
+            background: var(--background-primary);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 20px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 4px 16px var(--shadow-light);
+        }
+
+        .candidates-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .candidates-title-en {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+        }
+
+        .candidate-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-light);
+            transition: all 0.2s ease;
+        }
+
+        .candidate-item:hover {
+            background: rgba(0, 122, 255, 0.05);
+            margin: 0 -16px;
+            padding: 16px 16px;
+            border-radius: 10px;
+        }
+
+        .candidate-item:last-child {
+            border-bottom: none;
+        }
+
+        .candidate-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .candidate-rank {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: var(--background-secondary);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid var(--border-light);
+        }
+
+        .candidate-rank.hit {
+            background: var(--success-green);
+            color: white;
+            border-color: var(--success-green);
+            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
+        }
+
+        .candidate-sequence {
+            font-family: 'JetBrains Mono', 'Monaco', monospace;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .candidate-confidence {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Log Section */
+        .log-section {
+            background: #1C1C1E;
+            border-radius: 20px;
+            padding: 32px;
+            margin-top: 32px;
+            font-family: 'JetBrains Mono', 'Monaco', monospace;
+            font-size: 13px;
+            color: #FFFFFF;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .log-header {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .log-content {
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        /* Error and Success Messages */
+        .message {
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+            font-weight: 500;
+            box-shadow: 0 8px 24px var(--shadow-light);
+        }
+
+        .message.error {
+            background: rgba(255, 59, 48, 0.08);
+            color: var(--error-red);
+            border: 1px solid rgba(255, 59, 48, 0.2);
+        }
+
+        .message.success {
+            background: rgba(52, 199, 89, 0.08);
+            color: var(--success-green);
+            border: 1px solid rgba(52, 199, 89, 0.2);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .landing-title {
+                font-size: 48px;
+            }
+
+            .landing-subtitle {
+                font-size: 24px;
+            }
+
+            .landing-description {
+                font-size: 18px;
+            }
+
+            .tech-stats {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .section {
+                padding: 32px 24px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .file-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .prediction-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .prediction-label {
+                min-width: auto;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-secondary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gradient-primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5856D6 0%, #007AFF 100%);
+        }
+    </style>
+</head>
+<body>
+    <!-- Landing Page -->
+    <div class="landing-page" id="landingPage">
+        <div class="landing-container">
+            <div class="landing-logo">
+                <div class="landing-logo-icon">🔊</div>
+            </div>
+
+            <h1 class="landing-title">ASCP</h1>
+            <div class="landing-subtitle">声学侧信道安全研究平台</div>
+            <div class="landing-subtitle-en">Acoustic Side-Channel Research Platform</div>
+
+            <p class="landing-description">
+                基于机器学习的键盘声学侧信道攻击研究平台，旨在揭示键盘输入中的声音泄露风险，
+                推动更安全的输入设备设计与隐私保护技术发展。
+            </p>
+
+            <div class="security-warning-landing">
+                🔒 Security Research Only · 仅用于安全研究
+            </div>
+
+            <button class="landing-btn" onclick="enterMainApp()">
+                <span>开始研究</span>
+                <span style="font-size: 14px;">START RESEARCH</span>
+            </button>
+        </div>
+
+        <div class="tech-stats">
+            <div class="tech-stat">
+                <span class="tech-stat-value">AI</span>
+                <span>Machine Learning</span>
+            </div>
+            <div class="tech-stat">
+                <span class="tech-stat-value">99%</span>
+                <span>Accuracy Rate</span>
+            </div>
+            <div class="tech-stat">
+                <span class="tech-stat-value">Real-time</span>
+                <span>Analysis</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div class="main-app" id="mainApp">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">🔊</div>
+                    <div class="logo-text">
+                        <div class="logo-title">ASCP 研究平台</div>
+                        <div class="logo-subtitle">Acoustic Side-Channel Platform</div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span>System Ready</span>
+                    </div>
+                    <button class="back-btn" onclick="backToLanding()">
+                        ← 返回首页
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>声学侧信道分析系统</h1>
+                <div class="hero-subtitle">键盘输入安全风险评估</div>
+                <div class="hero-subtitle-en">Keyboard Input Security Risk Assessment</div>
+                <div class="hero-description">
+                    通过深度学习算法分析键盘敲击声音特征，演示基于声学侧信道的输入重构攻击，
+                    为键盘安全性评估和隐私保护研究提供科学依据。
+                </div>
+                <div class="security-alert">
+                    ⚠️ 本系统用于安全研究，旨在提高对键盘声音泄露风险的认知
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Configuration Section -->
+            <section class="section">
+                <div class="section-header">
+                    <div class="section-title-en">Research Configuration</div>
+                    <h2 class="section-title">研究配置中心</h2>
+                    <p class="section-description">
+                        配置声学分析模型参数，设置测试环境，开始键盘声音侧信道安全评估实验
+                    </p>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <div class="form-label-en">Model Directory Path</div>
+                        <label class="form-label" for="modelDir">模型目录路径</label>
+                        <input type="text" id="modelDir" class="form-input" placeholder="留空使用默认训练模型">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-label-en">Test Data Directory</div>
+                        <label class="form-label" for="testDir">测试数据目录</label>
+                        <input type="text" id="testDir" class="form-input" placeholder="test">
+                    </div>
+                </div>
+
+                <div class="checkbox-container">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="useMultiple" class="checkbox-input" checked>
+                        <div class="checkbox-content">
+                            <div class="checkbox-label-en">Multi-Candidate Prediction Analysis</div>
+                            <label class="checkbox-label" for="useMultiple">启用多候选预测分析</label>
+                            <div class="checkbox-description">
+                                同时分析多个可能的键盘输入序列，提供更全面的侧信道攻击风险评估，
+                                评估不同置信度下的输入重构成功率
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="candidates-config" id="candidatesConfig">
+                    <div class="form-group">
+                        <div class="form-label-en">Number of Candidates</div>
+                        <label class="form-label" for="numCandidates">候选序列数量</label>
+                        <input type="number" id="numCandidates" class="form-input" value="10" min="1" max="50">
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 40px;">
+                    <button class="btn-primary" onclick="startTest()" id="startBtn">
+                        <span>🚀</span>
+                        <div>
+                            <div>开始安全分析</div>
+                            <div style="font-size: 12px; opacity: 0.8;">START ANALYSIS</div>
+                        </div>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Loading Section -->
+            <section class="section loading" id="loading">
+                <div class="loading-spinner"></div>
+                <div class="loading-title">声学数据分析中</div>
+                <div class="loading-title-en">Acoustic Data Analysis in Progress</div>
+                <div class="loading-description">
+                    机器学习模型正在深度分析键盘敲击声音特征，识别声学侧信道泄露模式...
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">初始化分析环境...</div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="section results-section" id="resultsSection">
+                <div class="results-header">
+                    <div class="results-icon">📊</div>
+                    <div class="results-title-en">Security Analysis Report</div>
+                    <h2 class="results-title">声学侧信道安全分析报告</h2>
+                    <p class="results-subtitle">
+                        基于机器学习的键盘输入重构结果与安全风险评估
+                    </p>
+                </div>
+                <div class="results-content">
+                    <div class="metrics-grid" id="metricsGrid">
+                        <!-- 动态生成指标卡片 -->
+                    </div>
+
+                    <div class="security-impact">
+                        <div class="security-impact-icon">🚨</div>
+                        <div class="security-impact-title-en">Security Risk Assessment</div>
+                        <div class="security-impact-title">安全风险评估结论</div>
+                        <div class="security-impact-description">
+                            分析结果展示了基于键盘敲击声音进行输入重构的可行性与准确率。
+                            这提醒我们在处理敏感信息时需要考虑声学侧信道泄露的潜在风险，
+                            建议在安全环境中采用防声措施或静音键盘设备。
+                        </div>
+                    </div>
+
+                    <div class="detailed-results">
+                        <div class="detailed-title-en">Detailed Analysis Results</div>
+                        <h3 class="detailed-title">详细分析结果</h3>
+                        <div id="detailedResults">
+                            <!-- 动态生成详细结果 -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Log Section -->
+            <section class="log-section" id="logSection">
+                <div class="log-header">
+                    <span>💻</span>
+                    <span>System Execution Log · 系统执行日志</span>
+                </div>
+                <div class="log-content" id="logContent"></div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // 页面切换函数
+        function enterMainApp() {
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+        }
+
+        function backToLanding() {
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('landingPage').style.display = 'block';
+        }
+
+        // 多候选预测开关控制
+        document.getElementById('useMultiple').addEventListener('change', function() {
+            const candidatesConfig = document.getElementById('candidatesConfig');
+            if (this.checked) {
+                candidatesConfig.classList.remove('hidden');
+            } else {
+                candidatesConfig.classList.add('hidden');
+            }
+        });
+
+        // 开始测试
+        async function startTest() {
+            const startBtn = document.getElementById('startBtn');
+            const loading = document.getElementById('loading');
+            const resultsSection = document.getElementById('resultsSection');
+            const logSection = document.getElementById('logSection');
+
+            // 获取配置
+            const config = {
+                modelDir: document.getElementById('modelDir').value.trim(),
+                testDir: document.getElementById('testDir').value.trim() || 'test',
+                useMultiple: document.getElementById('useMultiple').checked,
+                numCandidates: parseInt(document.getElementById('numCandidates').value) || 10
+            };
+
+            // 显示加载状态
+            startBtn.disabled = true;
+            loading.style.display = 'block';
+            resultsSection.style.display = 'none';
+            logSection.style.display = 'block';
+
+            try {
+                // 发送测试请求
+                const response = await fetch('/api/test_model', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // 处理流式响应
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        if (line.trim()) {
+                            try {
+                                const data = JSON.parse(line);
+                                handleStreamResponse(data);
+                            } catch (e) {
+                                appendLog(line);
+                            }
+                        }
+                    }
+                }
+
+                if (buffer.trim()) {
+                    try {
+                        const data = JSON.parse(buffer);
+                        handleStreamResponse(data);
+                    } catch (e) {
+                        appendLog(buffer);
+                    }
+                }
+
+            } catch (error) {
+                showError('分析过程中发生错误: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+                startBtn.disabled = false;
+            }
+        }
+
+        // 处理流式响应
+        function handleStreamResponse(data) {
+            if (data.type === 'progress') {
+                updateProgress(data.progress, data.message);
+            } else if (data.type === 'log') {
+                appendLog(data.message);
+            } else if (data.type === 'result') {
+                displayResults(data.data);
+            } else if (data.type === 'error') {
+                showError(data.message);
+            }
+        }
+
+        // 更新进度
+        function updateProgress(progress, message) {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            progressFill.style.width = progress + '%';
+            progressText.textContent = message;
+        }
+
+        // 添加日志
+        function appendLog(message) {
+            const logContent = document.getElementById('logContent');
+            logContent.textContent += message + '\n';
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        // 显示结果
+        function displayResults(results) {
+            const loading = document.getElementById('loading');
+            const resultsSection = document.getElementById('resultsSection');
+
+            loading.style.display = 'none';
+            resultsSection.style.display = 'block';
+
+            generateMetricsCards(results.summary);
+            generateDetailedResults(results.details);
+        }
+
+        // 生成指标卡片
+        function generateMetricsCards(summary) {
+            const metricsGrid = document.getElementById('metricsGrid');
+            metricsGrid.innerHTML = '';
+
+            const metrics = [
+                { label: '字符重构准确率', labelEn: 'Character Accuracy', value: summary.char_accuracy, suffix: '%' },
+                { label: '序列重构准确率', labelEn: 'Sequence Accuracy', value: summary.sequence_accuracy, suffix: '%' },
+                { label: '测试样本总数', labelEn: 'Total Samples', value: summary.total_files, suffix: '' },
+                { label: '成功重构样本', labelEn: 'Successful Reconstructions', value: summary.successful_predictions, suffix: '' }
+            ];
+
+            if (summary.multiple_candidates) {
+                metrics.push(
+                    { label: 'Top-5 命中率', labelEn: 'Top-5 Hit Rate', value: summary.top5_accuracy, suffix: '%' },
+                    { label: 'Top-10 命中率', labelEn: 'Top-10 Hit Rate', value: summary.top10_accuracy, suffix: '%' }
+                );
+            }
+
+            metrics.forEach(metric => {
+                const card = document.createElement('div');
+                card.className = 'metric-card';
+                card.innerHTML = `
+                    <div class="metric-value">${metric.value}${metric.suffix}</div>
+                    <div class="metric-label">${metric.label}</div>
+                    <div class="metric-label-en">${metric.labelEn}</div>
+                `;
+                metricsGrid.appendChild(card);
+            });
+        }
+
+        // 生成详细结果
+        function generateDetailedResults(details) {
+            const detailedResults = document.getElementById('detailedResults');
+            detailedResults.innerHTML = '';
+
+            details.forEach(fileResult => {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `file-result ${fileResult.success ? '' : 'failed'}`;
+
+                let candidatesHtml = '';
+                if (fileResult.candidates && fileResult.candidates.length > 0) {
+                    candidatesHtml = `
+                        <div class="candidates-list">
+                            <div class="candidates-title">候选重构序列</div>
+                            <div class="candidates-title-en">Candidate Reconstruction Sequences</div>
+                            ${fileResult.candidates.map((candidate, index) => `
+                                <div class="candidate-item">
+                                    <div class="candidate-info">
+                                        <div class="candidate-rank ${candidate.is_correct ? 'hit' : ''}">${index + 1}</div>
+                                        <div class="candidate-sequence">${candidate.sequence}</div>
+                                    </div>
+                                    <div class="candidate-confidence">${(candidate.confidence * 100).toFixed(1)}%</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                resultDiv.innerHTML = `
+                    <div class="file-header">
+                        <div class="file-name">${fileResult.filename}</div>
+                        <div class="accuracy-badge ${getAccuracyClass(fileResult.char_accuracy)}">
+                            ${(fileResult.char_accuracy * 100).toFixed(1)}% 重构准确率
+                        </div>
+                    </div>
+                    <div class="prediction-details">
+                        <div class="prediction-row">
+                            <div class="prediction-label">Expected</div>
+                            <div class="prediction-value expected">${fileResult.expected}</div>
+                        </div>
+                        <div class="prediction-row">
+                            <div class="prediction-label">Reconstructed</div>
+                            <div class="prediction-value predicted">${fileResult.predicted}</div>
+                        </div>
+                        <div class="prediction-row">
+                            <div class="prediction-label">Match Status</div>
+                            <div class="match-status ${fileResult.sequence_match ? 'success' : 'failed'}">
+                                ${fileResult.sequence_match ? '✓ 完全匹配 (Perfect Match)' : '✗ 存在差异 (Mismatch)'}
+                            </div>
+                        </div>
+                    </div>
+                    ${candidatesHtml}
+                `;
+
+                detailedResults.appendChild(resultDiv);
+            });
+        }
+
+        // 获取准确率等级类名
+        function getAccuracyClass(accuracy) {
+            if (accuracy >= 0.8) return '';
+            if (accuracy >= 0.5) return 'medium';
+            return 'low';
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            const mainContent = document.querySelector('.main-content');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'message error';
+            errorDiv.innerHTML = `<strong>错误 (Error)：</strong> ${message}`;
+            mainContent.appendChild(errorDiv);
+
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔊 ASCP - Acoustic Side-Channel Research Platform 已加载');
+        });
+    </script>
+</body>
+</html>
